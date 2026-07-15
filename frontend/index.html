@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mera Cloud Uploader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .box { border: 2px dashed #0073bb; padding: 3px; width: 300px; margin: 0 auto; background: white; border-radius: 10px; }
+        button { background-color: #0073bb; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>☁️ AWS Cloud Photo Uploader ☁️</h2>
+    <p>Niche diye button se koi bhi photo select karein:</p>
+
+    <div class="box">
+        <input type="file" id="myFileButton" accept="image/*" /><br/><br/>
+        
+        <button onclick="uploadToCloud()">Upload to AWS</button>
+    </div>
+
+    <script>
+        async function uploadToCloud() {
+            // A. Pata lagao ki user ne kaunsi file select ki hai
+            const fileInput = document.getElementById('myFileButton');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert("Pehle koi photo toh select karo bachhe! 😃");
+                return;
+            }
+
+            // B. Yahan aapko apna API Gateway ka URL chipkana hai (Jo Phase 6 ke Step 1 me mila tha)
+            const webAPI = 'YAHAN_APNA_API_GATEWAY_URL_DALO/upload'; 
+
+            alert("Photo mil gayi! Ab ye AWS Cloud me ja rahi hai...");
+
+            // C. Photo ko computer ki bhasha (Base64) me badal kar AWS ko bhejna
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = async () => {
+                const base64Photo = reader.result.split(',')[1];
+                
+                // API Gateway ko data parcel ki trah bhejna
+                const response = await fetch(webAPI, {
+                    method: 'POST',
+                    body: JSON.stringify({ filename: file.name, data: base64Photo })
+                });
+                
+                alert('Mubarak ho! Photo AWS S3 me pahunch gayi aur Lambda chal gaya! 🎉');
+            };
+        }
+    </script>
+
+</body>
+</html>
