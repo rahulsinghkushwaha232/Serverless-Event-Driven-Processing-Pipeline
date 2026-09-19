@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "service": "gmail",
+  "senderEmail": "your-email@gmail.com",
+  "senderAppPassword": "your-16-char-app-password",
+  "recipientEmail": "your-email@gmail.com"
+}

@@ -30,27 +30,55 @@
                 return;
             }
 
-            // B. Yahan aapko apna API Gateway ka URL chipkana hai (Jo Phase 6 ke Step 1 me mila tha)
-            const webAPI = 'YAHAN_APNA_API_GATEWAY_URL_DALO/upload'; 
+            // API Gateway Endpoint (Local Server / Simulator)
+            const webAPI = window.location.origin.startsWith('http') ? '/upload' : 'http://localhost:3000/upload'; 
 
-            alert("Photo mil gayi! Ab ye AWS Cloud me ja rahi hai...");
+            const statusEl = document.getElementById('statusMsg');
+            if (statusEl) {
+                statusEl.innerText = "⏳ Photo process ho rahi hai aur S3 me bheji ja rahi hai...";
+                statusEl.style.color = "#0073bb";
+            }
 
-            // C. Photo ko computer ki bhasha (Base64) me badal kar AWS ko bhejna
+            // C. Photo ko Base64 me badal kar API Gateway ko bhejna
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onloadend = async () => {
-                const base64Photo = reader.result.split(',')[1];
-                
-                // API Gateway ko data parcel ki trah bhejna
-                const response = await fetch(webAPI, {
-                    method: 'POST',
-                    body: JSON.stringify({ filename: file.name, data: base64Photo })
-                });
-                
-                alert('Mubarak ho! Photo AWS S3 me pahunch gayi aur Lambda chal gaya! 🎉');
+                try {
+                    const base64Photo = reader.result.split(',')[1];
+                    
+                    const response = await fetch(webAPI, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename: file.name, data: base64Photo })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        if (statusEl) {
+                            statusEl.innerHTML = "✅ <b>Mubarak ho!</b> Photo S3 me pahunch gayi, Lambda trigger ho gaya, DynamoDB me save ho gaya aur SNS Email chali gayi! 🎉";
+                            statusEl.style.color = "#16a34a";
+                        } else {
+                            alert('Mubarak ho! Photo AWS S3 me pahunch gayi aur Lambda chal gaya! 🎉');
+                        }
+                    } else {
+                        throw new Error(result.error || 'Upload failed');
+                    }
+                } catch (err) {
+                    if (statusEl) {
+                        statusEl.innerText = "❌ Error: " + err.message + " (Kya local server chal raha hai?)";
+                        statusEl.style.color = "#dc2626";
+                    } else {
+                        alert("Error: " + err.message);
+                    }
+                }
             };
         }
     </script>
+    <div id="statusMsg" style="margin-top: 20px; font-weight: 500;"></div>
+    <div style="margin-top: 30px;">
+        <a href="/dashboard" target="_blank" style="color: #0073bb; text-decoration: none; font-weight: bold; border: 1px solid #0073bb; padding: 8px 16px; border-radius: 6px;">📊 Open Live Cloud Architecture Monitor</a>
+    </div>
 
 </body>
 </html>

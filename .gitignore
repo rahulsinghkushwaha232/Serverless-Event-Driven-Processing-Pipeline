@@ -1,0 +1,6 @@
+node_modules/
+email_config.json
+local_cloud/
+.DS_Store
+*.log
+volume/
